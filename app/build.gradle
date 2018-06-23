@@ -1,0 +1,70 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion '25.0.2'
+    signingConfigs {
+        hlkgjp {
+            keyAlias 'hlkgjp'
+            storeFile file('hjkgjp.keystore')
+            storePassword 'huliankaguanjia'
+            keyPassword 'huliankaguanjia'
+        }
+    }
+    lintOptions{
+        checkReleaseBuilds false
+        abortOnError false
+    }
+    defaultConfig {
+        applicationId 'com.hlkgj.app'
+        minSdkVersion 14
+        targetSdkVersion 25
+        versionCode 9
+        versionName "1.6"
+        signingConfig signingConfigs.hlkgjp
+    }
+    sourceSets.main {
+        jniLibs.srcDir 'libs'
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.hlkgjp
+        }
+        debug {
+            signingConfig signingConfigs.hlkgjp
+            jniDebuggable true
+        }
+    }
+    splits {
+        abi {
+            enable true
+            reset()
+            include 'x86', 'armeabi-v7a', 'x86_64'
+            universalApk true
+        }
+    }
+    productFlavors {
+    }
+}
+repositories {
+    maven { url "https://jitpack.io" }
+
+}
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.zhy:okhttputils:2.6.2'
+    compile 'com.github.ParkSangGwon:TedPermission:v1.0.12'
+    compile 'com.github.bumptech.glide:glide:3.7.0'
+    compile files('libs/layaconch.jar')
+    compile files('libs/jpush-android_v3.0.1.jar')
+    compile files('libs/tbs_sdk_thirdapp_v3.6.0.1234_43608_sharewithdownload_withoutGame_obfs_20180510_111111.jar')
+    compile files('libs/alipaySdk-20180403.jar')
+    //    compile 'com.karumi:dexter:4.0.0'
+    compile 'com.tencent.mm.opensdk:wechat-sdk-android-without-mta:+'
+    compile 'com.jakewharton:process-phoenix:2.0.0'
+    compile project(':UdeskSDKUI')
+}

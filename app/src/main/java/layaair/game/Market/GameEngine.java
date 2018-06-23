@@ -1,0 +1,149 @@
+package layaair.game.Market;
+
+import android.content.Context;
+import android.content.res.AssetManager;
+import android.content.res.Configuration;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+
+import layaair.game.IMarket.IPlugin;
+import layaair.game.IMarket.IPluginRuntimeProxy;
+import layaair.game.conch.ILayaGameEgine;
+import layaair.game.conch.LayaConch5;
+
+public class GameEngine implements IPlugin {
+	private static final String TAG = "LayaGameEngine";
+	public ILayaGameEgine mLayaGameEngine = null;
+    private String mGameUrl = "";
+    private Context mContext = null;
+    private IPluginRuntimeProxy mGameEngineProxy = null;
+	public static GameEngine _instance = null;
+		
+	public GameEngine(Context _ctx){
+        mContext = _ctx;
+		initMarket();
+		mLayaGameEngine = new LayaConch5(_ctx);
+		_instance = this;
+	}
+
+    public static GameEngine getInstance(){
+        return _instance;
+    }
+
+	@Override
+	public Object game_plugin_get_value(String key) {
+		return null;
+	}
+
+	private void initMarket(){
+		Log.d("", ">>>>>>>>>>>>>>>>>>>>>>>>");
+		Bundle bundle = new Bundle();
+		bundle.putString(LayaConch5.MARKET_MARKETNAME, "MarketTest");
+		bundle.putInt(LayaConch5.MARKET_WAITSCREENBKCOLOR, 0);
+		bundle.putInt(LayaConch5.MARKET_ENTERPLATFORMTYPE, 0);
+		bundle.putString(LayaConch5.MARKET_EXITSHOWWEBURL, "");
+		bundle.putString(LayaConch5.MARKET_SERVERNAME, "");
+		bundle.putInt(LayaConch5.MARKET_PAYTYPE, 0);
+		bundle.putInt(LayaConch5.MARKET_LOGINTYPE, 1);
+		bundle.putInt(LayaConch5.MARKET_CHARGETYPE, 0);
+		LayaConch5.setMarketBundle(bundle);
+	}
+	
+	@Override
+	public View game_plugin_get_view() {
+		Log.e(TAG,"game_plugin_get_view");		
+		return mLayaGameEngine.getAbsLayout();
+	}
+
+	@Override
+	public void game_plugin_init() {
+	    Log.d(TAG,"game_plugin_init url ="+mGameUrl);
+	    if( mGameUrl == null || mGameUrl.length() <2 ){
+	        Log.e("","引擎初始化失败，没有游戏地址 gameUrl = "+mGameUrl);
+	        return;
+	    }
+	    String gameUrl = mGameUrl;
+	    mLayaGameEngine.setIsPlugin(false);
+	    mLayaGameEngine.setGameUrl(gameUrl);
+	    Log.d(TAG,"url="+gameUrl);
+		String _path = (String) mGameEngineProxy.laya_get_value("CacheDirInSdcard");
+		if(_path==null)
+			_path = (String) mGameEngineProxy.laya_get_value("CacheDir");
+
+		String []vString = _path.split("/");
+		_path="";
+		for( int i = 0; i < vString.length-1; i++ )
+		{
+			_path += vString[i];
+			_path += "/";
+		}
+
+		mLayaGameEngine.setAppCacheDir(_path);
+		AssetManager am = mContext.getAssets();
+		mLayaGameEngine.setAssetInfo(am);
+		//_path = (String) mGameEngineProxy.laya_get_value("LibDir");
+		//mLayaGameEngine.setSoPath(_path);
+		//mLayaGameEngine.setJarFile(_path+"LayaBoxPlayer.jar");
+		//mLayaGameEngine.setSoFile("liblaya.so");
+		mLayaGameEngine.setInterceptKey(true);
+		mLayaGameEngine.onCreate();
+		LayaConch5 tmp = (LayaConch5)mLayaGameEngine;
+		Log.e(TAG,"game_plugin_init soPath="+tmp.getSoPath()+" jarfile="+tmp.getJarFile()+" appcache="+tmp.getAppCacheDir());
+	}
+
+	@Override
+	public boolean game_plugin_intercept_key(int keycode) {
+		return false;
+	}
+
+	@Override
+	public Object game_plugin_invoke_method(String method, Bundle param) {
+		return null;
+	}
+
+	@Override
+	public void game_plugin_onPause() {
+		mLayaGameEngine.onPause();
+	}
+
+	@Override
+	public void game_plugin_onResume() {
+		mLayaGameEngine.onResume();
+	}
+
+	@Override
+	public void game_plugin_onStop() {
+		mLayaGameEngine.onStop();
+	}
+	@Override
+	public  void game_plugin_onDestory() {
+		mLayaGameEngine.onDestroy();
+	}
+
+	@Override
+	public void game_plugin_set_option(String key, String value) {
+		Log.e(TAG,"game_plugin_set_option key="+key+" value="+value);
+		if( key.equalsIgnoreCase("gameUrl") )
+		    mGameUrl = value;
+		else if(key.equalsIgnoreCase("localize")){
+			boolean l = value.equalsIgnoreCase("true");
+			mLayaGameEngine.setLocalizable(l);
+		}
+	}
+
+	@Override
+	public void game_plugin_configonChanged(Configuration newConfig) {
+
+	}
+
+    @Override
+    public void game_plugin_set_runtime_proxy(
+            IPluginRuntimeProxy paramIGameEngineRuntimeProxy) {
+        mGameEngineProxy = paramIGameEngineRuntimeProxy;
+    }
+
+    public IPluginRuntimeProxy getRuntimeProxy(){
+        return mGameEngineProxy;
+    }
+}
